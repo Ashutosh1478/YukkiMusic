@@ -323,26 +323,25 @@ async def delete_songs(client, message: Message, _):
     if not got or len(got) == 1:
         return await message.reply_text("ek hi song chal rha")  # No queue or only one song
 
-    try:
-        positions = list(map(int, message.text.split()[1:]))  # Extract positions
-        if not positions:
-            return await message.reply_text("nhi hai queue mein")  # No valid positions
+  try:
+        titles_to_remove = message.text.split(maxsplit=1)[1].lower().split(",")  # Extract titles
+        titles_to_remove = [t.strip() for t in titles_to_remove]  # Clean input
 
-        positions = sorted(set(positions), reverse=True)  # Remove duplicates, sort in reverse
         removed_songs = []
+        new_queue = [song for song in got if song["title"].lower() not in titles_to_remove]
 
-        for pos in positions:
-            if 1 < pos <= len(got):  # Ignore first song (playing now)
-                removed_songs.append(got.pop(pos - 1))  # Remove songs
+        for song in got:
+            if song["title"].lower() in titles_to_remove:
+                removed_songs.append(song)
 
         if not removed_songs:
-            return await message.reply_text("thik see karo yaar")  # No valid deletions
+            return await message.reply_text("delete_invalid")  # No valid deletions
 
-        db[chat_id] = got  # Update queue
+        db[chat_id] = new_queue  # Update queue
         removed_titles = "\n".join([f"• {song['title']}" for song in removed_songs])
 
-        await message.reply_text("Han ho gya delete".format(title=removed_titles))
+        await message.reply_text("delete_success".format(title=removed_titles))
 
-    except ValueError:
-        return await message.reply_text("thik se karo yaar")  # Invalid input
+    except IndexError:
+        return await message.reply_text("delete_usage")  # Invalid input
 
