@@ -317,13 +317,13 @@ async def queue_back(client, CallbackQuery: CallbackQuery, _):
 async def delete_songs(client, message: Message, _):
     chat_id = message.chat.id
     if not await is_active_chat(chat_id):
-        return await message.reply_text("ok")
+        return await message.reply_text("general_6")
 
     got = db.get(chat_id)
     if not got or len(got) == 1:
-        return await message.reply_text("ek hi song chal rha")  # No queue or only one song
+        return await message.reply_text("queue_2")  # No queue or only one song
 
-  try:
+    try:
         titles_to_remove = message.text.split(maxsplit=1)[1].lower().split(",")  # Extract titles
         titles_to_remove = [t.strip() for t in titles_to_remove]  # Clean input
 
@@ -344,4 +344,3 @@ async def delete_songs(client, message: Message, _):
 
     except IndexError:
         return await message.reply_text("delete_usage")  # Invalid input
-
