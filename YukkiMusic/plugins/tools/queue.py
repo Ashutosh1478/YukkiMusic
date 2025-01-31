@@ -311,3 +311,38 @@ async def queue_back(client, CallbackQuery: CallbackQuery, _):
                     break
         except Exception:
             return
+
+@app.on_message(command("delete") & filters.group & ~BANNED_USERS)
+@language
+async def delete_songs(client, message: Message, _):
+    chat_id = message.chat.id
+    if not await is_active_chat(chat_id):
+        return await message.reply_text(_["general_6"])
+
+    got = db.get(chat_id)
+    if not got or len(got) == 1:
+        return await message.reply_text(_["queue_2"])  # No queue or only one song
+
+    try:
+        positions = list(map(int, message.text.split()[1:]))  # Extract positions
+        if not positions:
+            return await message.reply_text(_["delete_usage"])  # No valid positions
+
+        positions = sorted(set(positions), reverse=True)  # Remove duplicates, sort in reverse
+        removed_songs = []
+
+        for pos in positions:
+            if 1 < pos <= len(got):  # Ignore first song (playing now)
+                removed_songs.append(got.pop(pos - 1))  # Remove songs
+
+        if not removed_songs:
+            return await message.reply_text(_["delete_invalid"])  # No valid deletions
+
+        db[chat_id] = got  # Update queue
+        removed_titles = "\n".join([f"• {song['title']}" for song in removed_songs])
+
+        await message.reply_text(_["delete_success"].format(title=removed_titles))
+
+    except ValueError:
+        return await message.reply_text(_["delete_usage"])  # Invalid input
+
