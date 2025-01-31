@@ -312,7 +312,7 @@ async def queue_back(client, CallbackQuery: CallbackQuery, _):
         except Exception:
             return
 
-@app.on_message(command("dq") & filters.group & ~BANNED_USERS)
+@app.on_message(command("QUEUE_COMMAND") & filters.group & ~BANNED_USERS)
 @language
 async def delete_songs(client, message: Message, _):
     chat_id = message.chat.id
